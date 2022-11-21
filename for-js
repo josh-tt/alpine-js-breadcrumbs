@@ -80,12 +80,12 @@ export default ( link = '', blacklist = [], replacements = [], icon = '', iconAl
 		// Add replacement strings here to array (no trailing slash)
 		const replacementsArray = [
 			{
-				find: 'Ultraloop Expansions',
-				replace: 'Ultraloop',
-				path: '/ultraloop-expansions',
+				find: '',
+				replace: '',
+				path: '',
 			},
 			{
-				find: '– Twisted Tools',
+				find: '',
 				replace: '',
 				path: '',
 			},
