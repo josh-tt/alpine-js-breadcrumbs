@@ -1,12 +1,15 @@
-export default ( link = '', blacklist = [], replacements = [], customIcon = '', customAltIcon = '' ) => ( {
+import Alpine from 'alpinejs';
+
+export default ( link = '', blacklist = [], replacements = [], icon = '', iconAlt = '' ) => ( {
 	disabled: false, // Disabled state - this turns 'off' when blacklisted items are triggered
+	watch: false, //  Reinit on changes - useful for configuring breadcrumbs on the fly, but better just watch the things you need
 	customHref: link, // Add any url here to override the default href. Useful for getting breadcrumbs from a ajax link that is not updating the page url.
 	customBlacklist: blacklist,
 	// Add any links or text you want to cause this module to be 'disabled'. Then do stuff with 'disabled' in the template. Disabled also 'nulls' the breadcrumbs array.
 	customReplacements: replacements || [
 		{
 			find: 'Cats',
-			replace: 'I said dogs!',
+			replace: 'I said dogs, good damn!',
 			path: '',
 		},
 		{
@@ -16,8 +19,8 @@ export default ( link = '', blacklist = [], replacements = [], customIcon = '', 
 			pattern: 'https://dogs.com/dogs/(.*)',
 		},
 	], // Find replace setup to get rid of stuff. If paths are set, it will only run on those paths. If not, it will run on all paths. Regex is hacky, untested.
-	customIcon: '', // Use your own primary icon (home for example)
-	customAltIcon: '', // Use your own atl icon (back for example)
+	customIcon: icon, // Use your own primary icon (home for example)
+	customAltIcon: iconAlt, // Use your own atl icon (back for example)
 	href: '', // The href of the link (automatic or customHref)
 	domain: '', // The domain of the current page (or customHref)
 	domainTrailingSlash: '', // Adds a slash to the end of the domain (or customHref)
@@ -43,9 +46,9 @@ export default ( link = '', blacklist = [], replacements = [], customIcon = '', 
 	queryStrings: false, // Allow query strings as breadcrumb item
 	trailingSlash: false, // Add trailing slash
 	stringReplace: true, // Replace strings with find replace - use custom replacements []
-	icon: customIcon, // Default icon (home)
-	iconAlt: customAltIcon, // Alt icon (back)
-	useiconAlt: false, // use the svg for the first item (back button etc.)
+	icon: '', // Default icon (home)
+	iconAlt: '', // Alt icon (back)
+	useIconAlt: false, // use the svg for the first item (back button etc.)
 
 	getIcon() {
 		if ( this.customIcon ) {
@@ -77,12 +80,12 @@ export default ( link = '', blacklist = [], replacements = [], customIcon = '', 
 		// Add replacement strings here to array (no trailing slash)
 		const replacementsArray = [
 			{
-				find: '',
-				replace: '',
-				path: '',
+				find: 'Ultraloop Expansions',
+				replace: 'Ultraloop',
+				path: '/ultraloop-expansions',
 			},
 			{
-				find: '',
+				find: '– Twisted Tools',
 				replace: '',
 				path: '',
 			},
@@ -188,7 +191,7 @@ export default ( link = '', blacklist = [], replacements = [], customIcon = '', 
 			this.breadcrumbs[ this.breadcrumbs.length - 1 ].name = title;
 		}
 
-		if ( this.useiconAlt ) {
+		if ( this.useIconAlt ) {
 			this.breadcrumbs[ 0 ].icon = this.iconAlt;
 		}
 
@@ -286,6 +289,73 @@ export default ( link = '', blacklist = [], replacements = [], customIcon = '', 
 		}
 	},
 
+	setupWatch() {
+		// Switch over the watch type
+		this.$watch( 'href', () => {
+			this.init();
+		} );
+		this.$watch( 'customHref', () => {
+			this.init();
+		} );
+		this.$watch( 'customBlacklist', () => {
+			this.getBlacklist();
+		} );
+		this.$watch( 'customReplacements', () => {
+			this.getReplacementStrings();
+		} );
+		this.$watch( 'customBlacklist', () => {
+			this.getBlacklist();
+		} );
+		this.$watch( 'customIcon', () => {
+			this.getIcon();
+		} );
+		this.$watch( 'customAltIcon', () => {
+			this.getIconAlt();
+		} );
+		this.$watch( 'showHome', () => {
+			this.init();
+		} );
+		this.$watch( 'showBack', () => {
+			this.init();
+		} );
+		this.$watch( 'useWindowHistory', () => {
+			this.init();
+		} );
+		this.$watch( 'firstItem', () => {
+			this.init();
+		} );
+		this.$watch( 'lastItem', () => {
+			this.init();
+		} );
+		this.$watch( 'useDocTitle', () => {
+			this.init();
+		} );
+		this.$watch( 'allowOneItem', () => {
+			this.init();
+		} );
+		this.$watch( 'trailingSlash', () => {
+			this.init();
+		} );
+		this.$watch( 'queryStrings', () => {
+			this.init();
+		} );
+		this.$watch( 'hashes', () => {
+			this.init();
+		} );
+		this.$watch( 'lettercase', () => {
+			this.init();
+		} );
+		this.$watch( 'dashes', () => {
+			this.init();
+		} );
+		this.$watch( 'underscores', () => {
+			this.init();
+		} );
+		this.$watch( 'useIconAlt', () => {
+			this.init();
+		} );
+	},
+
 	init() {
 		// Url
 		const urlString = this.customHref ? this.customHref : window.location.href;
@@ -340,9 +410,19 @@ export default ( link = '', blacklist = [], replacements = [], customIcon = '', 
 		this.runChecks();
 		console.log( 'Breadcrumbs - After Adjustments', this.breadcrumbs );
 
+		// Setup watch
+		this.$watch( 'watch', () => {
+			this.init();
+		} );
+
+		if ( this.watch ) {
+			this.setupWatch();
+		}
+
 		// Reinitialize when pop state changes passively
 		window.addEventListener( 'popstate', () => {
 			this.customHref = '';
+			this.href = '';
 			this.init();
 		}, { passive: true } );
 
