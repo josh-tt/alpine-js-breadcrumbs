@@ -367,12 +367,11 @@
 			this.setupWatch();
 		}
 
-		// Reinitialize when pop state changes passively
-		window.addEventListener( 'popstate', () => {
-			this.customHref = '';
-			this.href = '';
-			this.init();
-		}, { passive: true } );
+
+		// Reinitialize when pop state changes passively - causes errors, so disabled for now
+		// window.addEventListener( 'popstate', () => {
+		// 	this.init();
+		// }, { passive: true } );
 
 		return this.breadcrumbs;
 	},
