@@ -28,6 +28,7 @@ In your html add <div x-data="breadcrub()"></div> and the rest is up to you conf
 ```
 # You can:
 - Get an array of breadcrumbs with name, url from either the current window location OR a custom href. Custom href means you give it a url like http://dogs.com/dogs/cats and you'll get something like:
+```
 [
     {
         "name": "Home",
@@ -42,15 +43,17 @@ In your html add <div x-data="breadcrub()"></div> and the rest is up to you conf
         "path": "/dogs/cats"
     }
 ]
+```
 - Blacklist certain urls or keywords (this is a bit rough, but works ok). You may wish to edit things like for exact match or includes etc.
-
+```
 customBlacklist: [
 		'http://cats.com',
 	], 
-  
+  ```
   Will do nothing but disable breadcrumbs and return an empty array of breadcrumbs if the url is http://cats.com
   
 - String replacement - For example if your custom rules for string replacement are:
+- ```
 customReplacements: [
 		{
 			find: 'Cats',
@@ -64,7 +67,9 @@ customReplacements: [
 			pattern: 'https://dogs.com/dogs/(.*)',
 		},
 ]
+```
 You should get get:
+```
 [
     {
         "name": "Home",
@@ -79,7 +84,7 @@ You should get get:
         "path": "/dogs/cats"
     }
 ]
-
+```
 - Remove the home link 
 - Use a custom icon for the home link
 - Make the home (or the first breadcrumb) say 'back'
