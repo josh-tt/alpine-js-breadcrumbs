@@ -354,6 +354,9 @@
 		this.$watch( 'useIconAlt', () => {
 			this.init();
 		} );
+		this.$watch( 'disabled', () => {
+			this.init();
+		} );
 	},
 
 	init() {
