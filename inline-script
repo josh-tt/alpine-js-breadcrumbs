@@ -1,7 +1,6 @@
-
 <script>
     document.addEventListener('alpine:init', () => {
-    Alpine.data('breadcrumb', () => ({
+    Alpine.data('breadcrumb', ( link = '', blacklist = [], replacements = [], customIcon = '', customAltIcon = '' ) => ({
         disabled: false, // Disabled state - this turns 'off' when blacklisted items are triggered
         customHref: 'http://dogs.com/dogs/cats', // Add any url here to override the default href. Useful for getting breadcrumbs from a ajax link that is not updating the page url.
         customBlacklist: [
