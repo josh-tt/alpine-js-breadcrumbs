@@ -53,7 +53,8 @@ customBlacklist: [
   Will do nothing but disable breadcrumbs and return an empty array of breadcrumbs if the url is http://cats.com
   
 - String replacement - For example if your custom rules for string replacement are:
-- ```
+- 
+```
 customReplacements: [
 		{
 			find: 'Cats',
