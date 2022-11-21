@@ -298,19 +298,19 @@
 			this.init();
 		} );
 		this.$watch( 'customBlacklist', () => {
-			this.getBlacklist();
+			this.init();
 		} );
 		this.$watch( 'customReplacements', () => {
-			this.getReplacementStrings();
+			this.init();
 		} );
 		this.$watch( 'customBlacklist', () => {
-			this.getBlacklist();
+			this.init();
 		} );
 		this.$watch( 'customIcon', () => {
-			this.getIcon();
+			this.init();
 		} );
 		this.$watch( 'customAltIcon', () => {
-			this.getIconAlt();
+			this.init();
 		} );
 		this.$watch( 'showHome', () => {
 			this.init();
