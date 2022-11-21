@@ -354,6 +354,9 @@ export default ( link = '', blacklist = [], replacements = [], icon = '', iconAl
 		this.$watch( 'useIconAlt', () => {
 			this.init();
 		} );
+		this.$watch( 'disabled', () => {
+			this.init();
+		} );
 	},
 
 	init() {
