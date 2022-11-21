@@ -1,12 +1,9 @@
-import Alpine from 'alpinejs';
-
-export default () => ( {
+export default ( link = '', blacklist = [], replacements = [], customIcon = '', customAltIcon = '' ) => ( {
 	disabled: false, // Disabled state - this turns 'off' when blacklisted items are triggered
-	customHref: 'http://dogs.com/dogs/cats', // Add any url here to override the default href. Useful for getting breadcrumbs from a ajax link that is not updating the page url.
-	customBlacklist: [
-		'http://cats.com',
-	], // Add any links or text you want to cause this module to be 'disabled'. Then do stuff with 'disabled' in the template. Disabled also 'nulls' the breadcrumbs array.
-	customReplacements: [
+	customHref: link, // Add any url here to override the default href. Useful for getting breadcrumbs from a ajax link that is not updating the page url.
+	customBlacklist: blacklist,
+	// Add any links or text you want to cause this module to be 'disabled'. Then do stuff with 'disabled' in the template. Disabled also 'nulls' the breadcrumbs array.
+	customReplacements: replacements || [
 		{
 			find: 'Cats',
 			replace: 'I said dogs!',
@@ -46,8 +43,8 @@ export default () => ( {
 	queryStrings: false, // Allow query strings as breadcrumb item
 	trailingSlash: false, // Add trailing slash
 	stringReplace: true, // Replace strings with find replace - use custom replacements []
-	icon: '', // Default icon (home)
-	iconAlt: '', // Alt icon (back)
+	icon: customIcon, // Default icon (home)
+	iconAlt: customAltIcon, // Alt icon (back)
 	useiconAlt: false, // use the svg for the first item (back button etc.)
 
 	getIcon() {
@@ -77,7 +74,7 @@ export default () => ( {
 		return this.blacklist = blacklist;
 	},
 	getReplacementStrings() {
-		// Add replacement strings here to array (no trailing slash) - These are the defaults in addition to the custom ones
+		// Add replacement strings here to array (no trailing slash)
 		const replacementsArray = [
 			{
 				find: '',
