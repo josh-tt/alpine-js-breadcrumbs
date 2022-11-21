@@ -16,14 +16,16 @@ You can also turn query strings into breadcrumb like object with name/url. Why? 
 Add the file to your js following the standard procedures for Alpine data or use the inline script in this repo
 
 In your html add <div x-data="breadcrub()"></div> and the rest is up to you configure the options. Something like
+#Example
+```
 <div x-data="breadcrumbs(link = 'http://sometest/thing/thing2')">
-	<template x-for="(crumb, index) in breadcrumbs" :key="index">
-	<a :href="crumb.path" class="text-black">
-	    <span x-text="crumb.name"></span>
-	</a>
-	</template>
+<template x-for="(crumb, index) in breadcrumbs" :key="index">
+<a :href="crumb.path" class="text-black">
+    <span x-text="crumb.name"></span>
+</a>
+</template>
 </div>
-
+```
 # You can:
 - Get an array of breadcrumbs with name, url from either the current window location OR a custom href. Custom href means you give it a url like http://dogs.com/dogs/cats and you'll get something like:
 [
