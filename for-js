@@ -357,6 +357,11 @@ export default ( link = '', blacklist = [], replacements = [], icon = '', iconAl
 	},
 
 	init() {
+		if ( this.disabled ) {
+			this.breadcrumbs = [];
+			this.searchParams = [];
+			return;
+		}
 		// Url
 		const urlString = this.customHref ? this.customHref : window.location.href;
 		const urlObj = new URL( urlString );
