@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs';
 
-export default ( link = 'http://twistedtools.com/something', blacklistItems = [], replacementItems = [], icon = '', iconAlt = '' ) => ( {
+export default ( link = 'http://something.com/something', blacklistItems = [], replacementItems = [], icon = '', iconAlt = '' ) => ( {
 	disabled: false, // Disabled state - this turns 'off' when blacklisted items are triggered
 	watch: true, //  Reinit on changes - useful for configuring breadcrumbs on the fly, but better just watch the things you need
 	customHref: link, // Add any url here to override the default href. Useful for getting breadcrumbs from a ajax link that is not updating the page url.
