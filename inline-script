@@ -1,6 +1,6 @@
 <script>
     document.addEventListener('alpine:init', () => {
-    Alpine.data('breadcrumb', ( link = '', blacklist = [], replacements = [], customIcon = '', customAltIcon = '' ) => ({
+    Alpine.data('breadcrumb', ( icon = '' ) => ({
         disabled: false,
 	customHref: 'http:/tt.com/expansions/s-layer',
 	trailingSlash: false,
