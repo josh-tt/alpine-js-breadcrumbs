@@ -1,105 +1,103 @@
 <script>
     document.addEventListener('alpine:init', () => {
     Alpine.data('breadcrumb', ( link = '', blacklist = [], replacements = [], customIcon = '', customAltIcon = '' ) => ({
-        disabled: false, // Disabled state - this turns 'off' when blacklisted items are triggered
-	watch: true, //  Reinit on changes - useful for configuring breadcrumbs on the fly, but better just watch the things you need
-	customHref: link, // Add any url here to override the default href. Useful for getting breadcrumbs from a ajax link that is not updating the page url.
-	customBlacklist: blacklistItems,
-	// Add any links or text you want to cause this module to be 'disabled'. Then do stuff with 'disabled' in the template. Disabled also 'nulls' the breadcrumbs array.
-	customReplacements: replacementItems || [
+        disabled: false,
+	customHref: 'http:/tt.com/expansions/s-layer',
+	trailingSlash: false,
+	lettercase: 'lowercase',
+	home: false,
+	back: false, // replace the first item with 'back' text
+	referrerUrl: false, // use the window referrer url as the back url
+	last: false, // show last item
+	title: false, // use document title as last item
+	stripDashes: false,
+	stripUnderscores: false,
+	bypassUrls: [],
+	stringReplace: true,
+	stringReplacements: [
 		{
-			find: 'Cats',
-			replace: 'I said dogs, good damn!',
+			find: '-expansions',
+			replace: '',
 			path: '',
 		},
 		{
-			find: 'I said dogs!',
-			replace: 'No, I said cats',
+			find: '',
+			replace: '',
 			path: '',
-			pattern: 'https://dogs.com/dogs/(.*)',
 		},
-	], // Find replace setup to get rid of stuff. If paths are set, it will only run on those paths. If not, it will run on all paths. Regex is hacky, untested.
-	customIcon: icon, // Use your own primary icon (home for example)
-	customAltIcon: iconAlt, // Use your own atl icon (back for example)
-	href: '', // The href of the link (automatic or customHref)
-	domain: '', // The domain of the current page (or customHref)
-	domainTrailingSlash: '', // Adds a slash to the end of the domain (or customHref)
-	path: '', // The path of the current page
-	docTitle: '', // Document title from html if exists
-	breadcrumbs: [], // The list generated of breadcrumbs
-	blacklist: [ 'home', 'index', 'default', 'index.html', 'index.htm', 'http://' ], // If you want to disable breadcrumbs for a specific page or string
-	replacements: [], // { find: 'Cats', replace: 'I said dogs!', path: '' }, // Matched by path for specific replacement or leave path blank for global replacement
-	search: '', // ?search=dogs
-	searchParams: {}, // The list generated of search params like breadcrumbs
-	lettercase: 'titlecase', // or lowercase - or blank for no change
-	showHome: true, // Show the base url as the first breadcrumb
-	showBack: false, // Use the word back for the name for first
-	useWindowHistory: false, // Use the referrer url (previous url) as the first breadcrumb path if origin is same domain
-	previousUrl: '', // The previous url if origin is same domain
-	firstItem: true, // Show the first item in the list
-	lastItem: false, // Show the last item in the list
-	useDocTitle: false, // Use the doc title for last item
-	allowOneItem: false, // Allow only one item in the list
-	dashes: false, // Show dashes in name
-	underscores: false, // Show underscores in name
-	hashes: false, // Allow hashes as breadcrumb item
-	queryStrings: false, // Allow query strings as breadcrumb item
-	trailingSlash: false, // Add trailing slash
-	stringReplace: true, // Replace strings with find replace - use custom replacements []
-	icon: '', // Default icon (home)
-	iconAlt: '', // Alt icon (back)
-	useIconAlt: false, // use the svg for the first item (back button etc.)
+	],
+	showFirstOnly: false, // only show the first item
+	showPreviousOnly: false, // only show the previous item
+	allowOneItem: false, // show the breadcrumb even if there is only one item
+	svg: 'home',
+	homeSvg: '<svg home xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
+	backSvg: '<svg back xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
+	altSvg: icon || '<svg alt xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
 
-	getIcon() {
-		if ( this.customIcon ) {
-			return this.customIcon;
+	get url() {
+		const url = this.customHref ? this.customHref : window.location.href;
+		if ( this.maybeDisable( url ) ) {
+			this.disabled = true;
 		}
-		const icon = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" /></svg>';
-		return this.icon = icon;
+		return this.url = url;
 	},
-	getIconAlt() {
-		if ( this.customAltIcon ) {
-			return this.customAltIcon;
-		}
-		const iconAlt = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z" clip-rule="evenodd" /></svg>';
-		return this.iconAlt = iconAlt;
+
+	get urlObj() {
+		const urlObj = new URL( this.url );
+		const pathname = urlObj.pathname;
+		const domain = urlObj.hostname;
+		const search = urlObj.search;
+		const searchParms = urlObj.searchParams;
+		const hash = urlObj.hash;
+
+		return this.urlObj = {
+			pathname,
+			domain,
+			search,
+			searchParms,
+			hash,
+		};
 	},
-	getBlacklist() {
-		// Add blacklist items here to array
-		const blacklistArray = [
-			'Products',
-		];
-		// Add blacklisted to array
-		if ( this.customBlacklist ) {
-			blacklistArray.push( ...this.customBlacklist );
+
+	get breadcrumbs() {
+		if ( ! this.disabled ) {
+			const pathname = this.urlObj.pathname;
+			const crumbs = this.createBreadcrumbs( pathname ).filter( ( item ) => item.name !== '' );
+			return this.breadcrumbs = crumbs;
 		}
 
-		return this.blacklist = blacklistArray;
+		return this.breadcrumbs = [];
 	},
-	getReplacementStrings() {
-		// Add replacement strings here to array (no trailing slash)
-		const replacementsArray = [
-			{
-				find: '',
-				replace: '',
-				path: '',
-			},
-			{
-				find: '',
-				replace: '',
-				path: '',
-			},
-		];
-		// Add custom replacements to array
-		if ( this.customReplacements ) {
-			replacementsArray.push( ...this.customReplacements );
+
+	get queryCrumbs() {
+		if ( ! this.disabled ) {
+			const search = this.urlObj.search;
+			const searchParms = this.urlObj.searchParms;
+			const queryCrumbs = this.createQueryCrumbs( search, searchParms );
+			return this.queryCrumbs = queryCrumbs;
 		}
 
-		this.stringReplace = replacementsArray.length > 0;
-
-		return this.replacements = replacementsArray;
+		return this.queryCrumbs = [];
 	},
-	getBreadcrumbs: ( path ) => {
+
+	get hashCrumb() {
+		if ( ! this.disabled ) {
+			const hash = this.urlObj.hash;
+			const hashCrumb = this.createHashCrumb( hash );
+			return this.hashCrumb = hashCrumb;
+		}
+
+		return this.hashCrumb = [];
+	},
+
+	maybeDisable( url ) {
+		if ( this.bypassUrls.includes( url ) ) {
+			return true;
+		}
+		return false;
+	},
+
+	createBreadcrumbs( path ) {
 		// Return home if path === '/'
 		if ( path === '/' ) {
 			return [ {
@@ -107,6 +105,7 @@
 				path: '/',
 			} ];
 		}
+
 		let crumbs = [];
 
 		// Split the path into an array of strings
@@ -128,252 +127,202 @@
 			};
 		} );
 
+		// Handle home, back and last options
+		this.handleHome( crumbs );
+		this.handleBack( crumbs );
+		this.handleLast( crumbs );
+		// Handle symbols and casings
+		this.handleDashes( crumbs );
+		this.handleUnderscores( crumbs );
+		this.handleTrailingSlash( crumbs );
+		this.handleLetterCase( crumbs );
+		this.handleStringReplace( crumbs );
+		// Remove items
+		this.handleFirstOnly( crumbs );
+		this.handlePreviousOnly( crumbs );
+		this.handleSvg( crumbs );
+
 		return crumbs;
 	},
-	getUrlData() {
-		// Url
-		const urlString = this.customHref ? this.customHref : window.location.href;
-		const urlObj = new URL( urlString );
-		const href = urlObj.href;
-		const path = urlObj.pathname;
-		const pathTrailingSlash = this.addTrailingSlash( path );
-		const domain = urlObj.origin;
-		const domainTrailingSlash = this.addTrailingSlash( domain );
 
-		// Url Parts for x-data
-		this.href = href;
-		this.path = path;
-		this.path.trailingSlash = pathTrailingSlash;
-		this.domain = domain;
-		this.domainTrailingSlash = domainTrailingSlash;
-
-		// Get the previous url if it was from the same domain
-		if ( document.referrer.split( '/' )[ 2 ] == location.hostname ) {
-			this.previousUrl = document.referrer;
+	createQueryCrumbs( search, searchParms ) {
+		if ( search === '' ) {
+			return [];
 		}
-
-		// Search Query as
-		this.search = urlObj.search;
-		this.searchParams = Array.from( urlObj.searchParams.entries() );
-
-		if ( this.searchParams.length > 0 ) {
-			this.searchParams = this.searchParams.map( ( item ) => {
-				return {
-					key: item[ 0 ],
-					value: item[ 1 ],
-					path: `${ path }?${ item[ 0 ] }=${ item[ 1 ] }`,
-				};
+		const queryCrumbs = [];
+		searchParms.forEach( ( value, key ) => {
+			queryCrumbs.push( {
+				name: key,
+				value,
 			} );
-		}
+		} );
 
-		this.docTitle = document.title;
+		// Handle symbols and casings
+		this.handleDashes( queryCrumbs );
+		this.handleUnderscores( queryCrumbs );
+		this.handleLetterCase( queryCrumbs );
+		this.handleStringReplace( queryCrumbs );
 
-		// Icons
-		this.getIcon(); // Use default icon or custom (home is default.)
-		this.getIconAlt(); // Use default icon alt or custom (back is default.)
-
-		// Get the breadcrumbs
-		this.breadcrumbs = this.getBreadcrumbs( path ).filter( ( item ) => item.name !== '' );
-		console.log( 'Breadcrumbs - Before Adjustments ', this.breadcrumbs );
+		return queryCrumbs;
 	},
 
-	// Helpers
-	addTrailingSlash: ( path ) => ( path.endsWith( '/' ) ? path : `${ path }/` ),
-	removeTrailingSlash: ( path ) => ( path.endsWith( '/' ) ? path.slice( 0, -1 ) : path ),
-	setTitleCase: ( str ) => str.replace( /(\w)(\w*)/g, ( g0, g1, g2 ) => g1.toUpperCase() + g2.toLowerCase() ),
-	setLowerCase: ( str ) => str.replace( /(\w)(\w*)/g, ( g0, g1, g2 ) => g1.toLowerCase() + g2.toLowerCase() ),
-	stripDashes: ( str ) => str.replace( /-/g, ' ' ),
-	stripUnderscores: ( str ) => str.replace( /_/g, ' ' ),
-	removeQueryString: ( str ) => str.split( '?' )[ 0 ],
-	removeHash: ( str ) => str.split( '#' )[ 0 ],
-	getFirstWord: ( str ) => str.split( ' ' )[ 0 ],
-
-	// Options checks
-	runChecks() {
-		// If empty, bail
-		if ( this.breadcrumbs.length === 0 ) {
-			return;
+	createHashCrumb( hash ) {
+		if ( hash === '' ) {
+			return [];
 		}
+		const hashCrumb = [ {
+			name: hash.replace( '#', '' ),
+			path: hash,
+		} ];
 
-		// If blacklisted item, bail
-		if ( this.blacklist.some( ( item ) => this.path.includes( item ) ) ) {
-			this.breadcrumbs = []; // Sets null just in case want to use null check for disabled instead of 'disabled' (in x-for loop for example)
-			this.searchParams = {}; // Sets null just in case want to use null check for disabled
-			return;
+		// Handle symbols and casings
+		this.handleDashes( hashCrumb );
+		this.handleUnderscores( hashCrumb );
+		this.handleLetterCase( hashCrumb );
+		this.handleStringReplace( hashCrumb );
+
+		return hashCrumb;
+	},
+
+	handleSvg( crumbs ) {
+		if ( this.svg === 'home' ) {
+			crumbs[ 0 ].svg = this.homeSvg;
+		} else if ( this.svg === 'back' ) {
+			crumbs[ 1 ].svg = this.backSvg;
+		} else if ( this.svg === 'alt' ) {
+			crumbs[ crumbs.length - 1 ].svg = this.altSvg;
+		} else if ( this.svg === '' ) {
+			crumbs[ 0 ].svg = '';
 		}
+	},
 
-		if ( this.disabled ) {
-			this.breadcrumbs = [];
-			this.searchParams = {};
-			return;
-		}
-
-		if ( ! this.showHome ) {
-			this.breadcrumbs.shift();
-		}
-
-		if ( this.firstItem === 'false' ) {
-			if ( this.breadcrumbs.length > 1 ) {
-				this.breadcrumbs.shift();
+	handleHome( crumbs ) {
+		if ( ! this.home ) {
+			if ( crumbs[ 0 ].path === '/' ) {
+				// Remove it from array
+				crumbs.shift();
 			}
 		}
+	},
 
-		if ( this.lastItem === 'false' ) {
-			if ( this.breadcrumbs.length > 1 ) {
-				this.breadcrumbs.pop();
+	handleBack( crumbs ) {
+		// If back is true, replace first item with 'back' text
+		if ( this.back ) {
+			crumbs[ 0 ].name = 'Back';
+		}
+		if ( this.referrerUrl ) {
+			// Check if referrer is for this domain, if it is, use it
+			if ( document.referrer.includes( this.urlObj.domain ) ) {
+				crumbs[ 0 ].path = document.referrer;
 			}
 		}
+	},
 
-		if ( this.allowOneItem === 'false' ) {
-			if ( this.breadcrumbs.length === 1 ) {
-				this.breadcrumbs = [];
-				return;
+	handleFirstOnly( crumbs ) {
+		if ( this.showFirstOnly ) {
+			crumbs.length = 1;
+		}
+	},
+
+	handlePreviousOnly( crumbs ) {
+		if ( this.showPreviousOnly ) {
+			// Get the second to last item in array and remove everything else
+			const lastItem = crumbs[ crumbs.length - 2 ];
+			if ( lastItem ) {
+				crumbs.length = 0;
+				crumbs.push( lastItem );
 			}
 		}
+	},
 
-		if ( this.useDocTitle ) {
-			// Get the document title
-			let title = document.title;
-			// If the title is empty, use the last breadcrumb
-			if ( title === '' ) {
-				title = this.breadcrumbs[ this.breadcrumbs.length - 1 ].name;
+	handleLast( crumbs ) {
+		// If last is false, remove last item
+		if ( ! this.last ) {
+			crumbs.pop();
+		}
+		if ( this.last ) {
+			// Use the document title
+			if ( this.useTitle ) {
+				crumbs[ crumbs.length - 1 ].name = document.title;
 			}
-
-			this.breadcrumbs[ this.breadcrumbs.length - 1 ].name = title;
 		}
+	},
 
-		if ( this.useIconAlt ) {
-			this.breadcrumbs[ 0 ].icon = this.iconAlt;
-		}
-
-		if ( this.showBack ) {
-			// Change the name to 'Back'
-			this.breadcrumbs[ 0 ].name = 'Back';
-		}
-
-		if ( this.useWindowHistory ) {
-			// Check the history to see if 'back' makes sense
-			if ( ! this.previousUrl ) {
-				//User came from other domain or from direct, so we don't have a history.. Bail.
-				return;
-			}
-			//User came from another page on your site, so we have a history and can use back
-			this.breadcrumbs[ 0 ].path = this.previousUrl;
-		}
-
+	handleTrailingSlash( crumbs ) {
 		if ( this.trailingSlash ) {
-			this.breadcrumbs = this.breadcrumbs.map( ( item ) => {
-				item.path = this.addTrailingSlash( item.path );
-				return item;
+			// Add trailing slash to each crumb
+			crumbs.map( ( crumb ) => {
+				if ( ! crumb.path.endsWith( '/' ) ) {
+					crumb.path = `${ crumb.path }/`;
+				}
 			} );
+			return;
 		}
+		// If path is not equal to '/', remove trailing slash
+		crumbs.map( ( crumb ) => {
+			if ( crumb.path !== '/' && crumb.path.endsWith( '/' ) ) {
+				crumb.path = crumb.path.slice( 0, -1 );
+			}
+		} );
+	},
 
-		if ( this.queryStrings === false ) {
-			this.path = this.path.split( '?' )[ 0 ];
-		}
-
-		if ( this.hashes === false ) {
-			this.path = this.path.split( '#' )[ 0 ];
-		}
-
-		if ( this.lettercase === 'titlecase' ) {
-			this.breadcrumbs = this.breadcrumbs.map( ( item ) => {
-				item.name = this.setTitleCase( item.name );
-				return item;
-			} );
-		}
-
+	handleLetterCase( crumbs ) {
 		if ( this.lettercase === 'lowercase' ) {
-			this.breadcrumbs = this.breadcrumbs.map( ( item ) => {
-				item.name = this.setLowerCase( item.name );
-				return item;
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.toLowerCase();
+			} );
+			return;
+		}
+		if ( this.lettercase === 'uppercase' ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.toUpperCase();
+			} );
+			return;
+		}
+		if ( this.lettercase === 'capitalize' ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.charAt( 0 ).toUpperCase() + crumb.name.slice( 1 );
 			} );
 		}
+	},
 
-		if ( this.dashes === false ) {
-			this.breadcrumbs = this.breadcrumbs.map( ( item ) => {
-				item.name = this.stripDashes( item.name );
-				return item;
+	handleDashes( crumbs ) {
+		if ( this.stripDashes ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.replace( /-/g, ' ' );
 			} );
 		}
+	},
 
-		if ( this.underscores === false ) {
-			this.breadcrumbs = this.breadcrumbs.map( ( item ) => {
-				item.name = this.stripUnderscores( item.name );
-				return item;
+	handleUnderscores( crumbs ) {
+		if ( this.stripUnderscores ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.replace( /_/g, ' ' );
 			} );
 		}
+	},
 
-		// String replace (post processing)
-		this.getReplacementStrings();
-
-		if ( this.stringReplace === true ) {
-			if ( this.replacements ) {
-				// Loop through the replacements checking if the path is empty or not
-				this.replacements.forEach( ( replacement ) => {
-					if ( replacement.path !== '' ) {
-						// If trailing slash is enabled, add it to the replacement path (or remove it if not) - This prevents typo issues
-						if ( this.trailingSlash ) {
-							replacement.path = this.addTrailingSlash( replacement.path );
-						} else {
-							replacement.path = this.removeTrailingSlash( replacement.path );
+	handleStringReplace( crumbs ) {
+		if ( this.stringReplace ) {
+			crumbs.map( ( crumb ) => {
+				this.stringReplacements.forEach( ( replace ) => {
+					// If path is not empty and path matches, do the find replace
+					if ( replace.path !== '' ) {
+						if ( crumb.path === replace.path ) {
+							// If find is empty, replace the crumb name with replace name
+							if ( replace.find === '' ) {
+								crumb.name = replace.replace;
+							} else {
+							// If find is not empty, do the find replace
+								crumb.name = crumb.name.replace( replace.find, replace.replace );
+							}
 						}
-						// If the paths match exactly, replace the name
-						if ( this.path === replacement.path ) {
-							console.log( 'Path matched - replacing', replacement.path, this.path );
-							// Check the breadcrumb name for the find string and replace it
-							this.breadcrumbs[ this.breadcrumbs.length - 1 ].name = this.breadcrumbs[ this.breadcrumbs.length - 1 ].name.replace( replacement.find, replacement.replace );
-						}
-						// If the path matches the pattern (regex), replace the name
-						if ( this.path.match( replacement.pattern ) ) {
-							console.log( 'Pattern matched - replacing', replacement.pattern, this.path );
-							// Check the breadcrumb name for the find string and replace it
-							this.breadcrumbs[ this.breadcrumbs.length - 1 ].name = this.breadcrumbs[ this.breadcrumbs.length - 1 ].name.replace( replacement.find, replacement.replace );
-						}
-					}
-					// If the replacements path is empty, replace the name on the breadcrumb with the find / replace
-					if ( replacement.path === '' ) {
-						this.breadcrumbs[ this.breadcrumbs.length - 1 ].name = this.breadcrumbs[ this.breadcrumbs.length - 1 ].name.replace( replacement.find, replacement.replace );
+					} else if ( replace.path === '' ) {
+						crumb.name = crumb.name.replace( replace.find, replace.replace );
 					}
 				} );
-			}
-		}
-	},
-
-	setupWatch() {
-		if ( this.watch === true ) {
-			// This is not a good way to do the interactivity due to feedback loops. But it ok for testing.
-			this.$watch( 'customHref', () => {
-				this.init();
-			} );
-			this.$watch( 'href', () => {
-				this.init();
 			} );
 		}
-	},
-
-	init() {
-		// Url
-		this.getUrlData();
-
-		// Get the blacklist
-		this.getBlacklist();
-
-		// Run checks
-		this.runChecks();
-
-		// Setup watch
-		if ( this.watch ) {
-			this.setupWatch();
-		}
-
-
-		// Reinitialize when pop state changes passively - causes errors, so disabled for now
-		// window.addEventListener( 'popstate', () => {
-		// 	this.init();
-		// }, { passive: true } );
-
-		return this.breadcrumbs;
 	},
     }))
 })
