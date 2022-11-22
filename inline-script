@@ -1,56 +1,63 @@
 <script>
     document.addEventListener('alpine:init', () => {
-    Alpine.data('breadcrumb', ( icon = '' ) => ({
+    Alpine.data('breadcrumb', ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp=never', replacements = [ { find: 'dogs', replace: 'elephants', path: '' } ], bypass = [ '' ], icon = null ) => ({
         disabled: false,
-	customHref: 'http:/tt.com/expansions/s-layer',
-	trailingSlash: false,
-	lettercase: 'lowercase',
-	home: false,
+	href: link,
+	home: true,
+	allowOneItem: false, // show the breadcrumb even if there is only one item
 	back: false, // replace the first item with 'back' text
 	referrerUrl: false, // use the window referrer url as the back url
-	last: false, // show last item
+	last: true, // show last item
+	lettercase: 'lowercase', // uppercase, lowercase, capitalize
 	title: false, // use document title as last item
 	stripDashes: false,
 	stripUnderscores: false,
-	bypassUrls: [],
+	trailingSlash: false,
+	bypassUrls: [
+		...bypass,
+		'http://something.com/dogs',
+		'http://something.com/dogs/cats/',
+		'http://something.com/dogs/cats/some-bird/some-otter?mvp=never',
+	],
 	stringReplace: true,
 	stringReplacements: [
+		...replacements,
 		{
-			find: '-expansions',
-			replace: '',
-			path: '',
+			find: 'bird',
+			replace: 'birdie',
+			path: '/dogs/cats/some-bird',
+			pattern: '',
 		},
 		{
-			find: '',
-			replace: '',
+			find: 'some-otter',
+			replace: 'otters',
 			path: '',
+			pattern: '',
 		},
 	],
 	showFirstOnly: false, // only show the first item
 	showPreviousOnly: false, // only show the previous item
-	allowOneItem: false, // show the breadcrumb even if there is only one item
 	svg: 'home',
 	homeSvg: '<svg home xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
 	backSvg: '<svg back xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
 	altSvg: icon || '<svg alt xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
 
 	get url() {
-		const url = this.customHref ? this.customHref : window.location.href;
-		if ( this.maybeDisable( url ) ) {
-			this.disabled = true;
-		}
-		return this.url = url;
+		const href = this.href ? this.href : window.location.href;
+		console.log( href );
+
+		return href;
 	},
 
 	get urlObj() {
-		const urlObj = new URL( this.url );
-		const pathname = urlObj.pathname;
-		const domain = urlObj.hostname;
-		const search = urlObj.search;
-		const searchParms = urlObj.searchParams;
-		const hash = urlObj.hash;
+		const obj = new URL( this.url );
+		const pathname = obj.pathname;
+		const domain = obj.hostname;
+		const search = obj.search;
+		const searchParms = obj.searchParams;
+		const hash = obj.hash;
 
-		return this.urlObj = {
+		return {
 			pathname,
 			domain,
 			search,
@@ -63,10 +70,10 @@
 		if ( ! this.disabled ) {
 			const pathname = this.urlObj.pathname;
 			const crumbs = this.createBreadcrumbs( pathname ).filter( ( item ) => item.name !== '' );
-			return this.breadcrumbs = crumbs;
+			return crumbs;
 		}
 
-		return this.breadcrumbs = [];
+		return [];
 	},
 
 	get queryCrumbs() {
@@ -74,27 +81,27 @@
 			const search = this.urlObj.search;
 			const searchParms = this.urlObj.searchParms;
 			const queryCrumbs = this.createQueryCrumbs( search, searchParms );
-			return this.queryCrumbs = queryCrumbs;
+			return queryCrumbs;
 		}
 
-		return this.queryCrumbs = [];
+		return [];
 	},
 
 	get hashCrumb() {
 		if ( ! this.disabled ) {
 			const hash = this.urlObj.hash;
 			const hashCrumb = this.createHashCrumb( hash );
-			return this.hashCrumb = hashCrumb;
+			return hashCrumb;
 		}
 
-		return this.hashCrumb = [];
+		return [];
 	},
 
 	maybeDisable( url ) {
 		if ( this.bypassUrls.includes( url ) ) {
-			return true;
+			return this.disabled = true;
 		}
-		return false;
+		return this.disabled = false;
 	},
 
 	createBreadcrumbs( path ) {
@@ -161,7 +168,7 @@
 		this.handleDashes( queryCrumbs );
 		this.handleUnderscores( queryCrumbs );
 		this.handleLetterCase( queryCrumbs );
-		this.handleStringReplace( queryCrumbs );
+		// Todo: handle string replace
 
 		return queryCrumbs;
 	},
@@ -179,7 +186,7 @@
 		this.handleDashes( hashCrumb );
 		this.handleUnderscores( hashCrumb );
 		this.handleLetterCase( hashCrumb );
-		this.handleStringReplace( hashCrumb );
+		// Todo: handle string replace
 
 		return hashCrumb;
 	},
@@ -323,6 +330,10 @@
 				} );
 			} );
 		}
+	},
+
+	init() {
+		this.maybeDisable( this.href );
 	},
     }))
 })
