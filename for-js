@@ -1,26 +1,58 @@
-export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp=never', replacements = [ { find: 'dogs', replace: 'elephants', path: '' } ], bypass = [ '' ], icon = null ) => ( {
+import Alpine from 'alpinejs';
+// TODO:
+// Window history for back button option
+// Build href array history and use that for back button so that dynamic url inputs can be traced back
+export default (
+	{
+		disabled = false,
+		href = '',
+		home = true,
+		allowOneItem = true,
+		back = false,
+		referrerUrl = true,
+		last = false,
+		lettercase = 'uppercase',
+		title = false,
+		stripDashes = true,
+		stripUnderscores = true,
+		trailingSlash = true,
+		blacklistUrls = [],
+		whitelistUrls = [],
+		stringReplace = true,
+		stringReplacements = [],
+		showFirstOnly = false,
+		showPreviousOnly = false,
+		svg = 'home',
+		homeSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" /></svg>',
+		backSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" /></svg>',
+		altSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v2.5A2.25 2.25 0 004.25 9h2.5A2.25 2.25 0 009 6.75v-2.5A2.25 2.25 0 006.75 2h-2.5zm0 9A2.25 2.25 0 002 13.25v2.5A2.25 2.25 0 004.25 18h2.5A2.25 2.25 0 009 15.75v-2.5A2.25 2.25 0 006.75 11h-2.5zm9-9A2.25 2.25 0 0011 4.25v2.5A2.25 2.25 0 0013.25 9h2.5A2.25 2.25 0 0018 6.75v-2.5A2.25 2.25 0 0015.75 2h-2.5zm0 9A2.25 2.25 0 0011 13.25v2.5A2.25 2.25 0 0013.25 18h2.5A2.25 2.25 0 0018 15.75v-2.5A2.25 2.25 0 0015.75 11h-2.5z" clip-rule="evenodd" /></svg>',
+	} ) => ( {
 
-	disabled: false,
-	href: link,
-	home: true,
-	allowOneItem: false, // show the breadcrumb even if there is only one item
-	back: false, // replace the first item with 'back' text
-	referrerUrl: false, // use the window referrer url as the back url
-	last: true, // show last item
-	lettercase: 'lowercase', // uppercase, lowercase, capitalize
-	title: false, // use document title as last item
-	stripDashes: false,
-	stripUnderscores: false,
-	trailingSlash: false,
-	bypassUrls: [
-		...bypass,
-		'http://something.com/dogs',
-		'http://something.com/dogs/cats/',
-		'http://something.com/dogs/cats/some-bird/some-otter?mvp=never',
+	// OPTIONS
+	disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
+	href, // The current url or the user input url
+	home, // Show the home or first crumb (if back is on, back is home and home is first)
+	allowOneItem, // show the breadcrumb even if there is only one item
+	back, // Replace the first item with 'back' text
+	referrerUrl, // use the window referrer url as the back url
+	last, // Show last item
+	title, // use document title for the last item
+	lettercase, // uppercase, lowercase, capitalize
+	stripDashes, // Remove dashes from the crumb names
+	stripUnderscores, // Remove underscores from the crumb names
+	trailingSlash, // Add trailing slash to the generated hrefs
+	whitelistUrls: [
+		...whitelistUrls, // User defined urls to enable breadcrumbs on - setting disabled to false (opposite of blacklistUrls) - // Use a regex wildcard to match multiple urls
+		// 'http://something.com/foo/*',
+
 	],
-	stringReplace: true,
+	blacklistUrls: [
+		...blacklistUrls, // User defined urls to bypass (others below are built-in - can't be changed) - // Use a regex wildcard to match multiple urls
+		// 'http://something.com/bar/*',
+	],
+	stringReplace, // Enable string replacement
 	stringReplacements: [
-		...replacements,
+		...stringReplacements, // User defined string replacements (others below are built-in - can't be changed)
 		{
 			find: 'bird',
 			replace: 'birdie',
@@ -28,21 +60,28 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 			pattern: '',
 		},
 		{
-			find: 'some-otter',
-			replace: 'otters',
-			path: '',
+			find: 'BAZ',
+			replace: 'replaced texts',
+			path: '/foo/baz',
 			pattern: '',
 		},
+		{
+			find: '',
+			replace: '',
+			path: '',
+			pattern: 'https://dogs.com/dogs/(.*)', // Todo: Reimplement pattern from previous version
+		},
 	],
-	showFirstOnly: false, // only show the first item
-	showPreviousOnly: false, // only show the previous item
-	svg: 'home',
-	homeSvg: '<svg home xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
-	backSvg: '<svg back xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
-	altSvg: icon || '<svg alt xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0L0 8l1.414 1.414L8 2.828l5.586 5.586L16 8z"/></svg>',
+	showFirstOnly, // only show the first item
+	showPreviousOnly, // only show the previous item
+	svg, // 'home', 'back', 'alt'
+	homeSvg, // Svg markup for home
+	backSvg, // Svg markup for back
+	altSvg, // Svg markup for alt
 
 	get url() {
 		const href = this.href ? this.href : window.location.href;
+		this.maybeDisable( href );
 		console.log( href );
 
 		return href;
@@ -97,10 +136,25 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 	},
 
 	maybeDisable( url ) {
-		if ( this.bypassUrls.includes( url ) ) {
-			return this.disabled = true;
+		if ( this.whitelistUrls.length > 0 ) {
+			// Use match to check if the url is in the whitelist
+			const whitelistMatch = this.whitelistUrls.some( ( item ) => {
+				const regex = new RegExp( item );
+				return regex.test( url );
+			} );
+			if ( ! whitelistMatch ) {
+				this.disabled = ! this.disabled;
+			}
 		}
-		return this.disabled = false;
+		if ( this.blacklistUrls.length > 0 ) {
+			const blacklistMatch = this.blacklistUrls.some( ( item ) => {
+				const regex = new RegExp( item );
+				return regex.test( url );
+			} );
+			if ( blacklistMatch ) {
+				this.disabled = ! this.disabled;
+			}
+		}
 	},
 
 	createBreadcrumbs( path ) {
@@ -146,7 +200,10 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 		// Remove items
 		this.handleFirstOnly( crumbs );
 		this.handlePreviousOnly( crumbs );
+		// Attach Svgs
 		this.handleSvg( crumbs );
+		// Finalize
+		this.handleAllowOneItem( crumbs );
 
 		return crumbs;
 	},
@@ -199,6 +256,12 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 			crumbs[ crumbs.length - 1 ].svg = this.altSvg;
 		} else if ( this.svg === '' ) {
 			crumbs[ 0 ].svg = '';
+		}
+	},
+
+	handleAllowOneItem( crumbs ) {
+		if ( ! this.allowOneItem && crumbs.length === 1 ) {
+			crumbs.length = 0;
 		}
 	},
 
@@ -314,6 +377,13 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 				this.stringReplacements.forEach( ( replace ) => {
 					// If path is not empty and path matches, do the find replace
 					if ( replace.path !== '' ) {
+						// Pre-format the replacement path trailing slashes to match user setting to avoid typos
+						if ( this.trailingSlash ) {
+							replace.path = this.addTrailingSlash( replace.path );
+						} else {
+							replace.path = this.removeTrailingSlash( replace.path );
+						}
+						// If the path matches
 						if ( crumb.path === replace.path ) {
 							// If find is empty, replace the crumb name with replace name
 							if ( replace.find === '' ) {
@@ -323,6 +393,7 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 								crumb.name = crumb.name.replace( replace.find, replace.replace );
 							}
 						}
+						// If path is empty, do the find replace
 					} else if ( replace.path === '' ) {
 						crumb.name = crumb.name.replace( replace.find, replace.replace );
 					}
@@ -330,6 +401,12 @@ export default ( link = 'http://something.com/dogs/cats/some-bird/some-otter?mvp
 			} );
 		}
 	},
+
+	// Helpers
+	addTrailingSlash: ( path ) => ( path.endsWith( '/' ) ? path : `${ path }/` ),
+	removeTrailingSlash: ( path ) => ( path.endsWith( '/' ) ? path.slice( 0, -1 ) : path ),
+	setTitleCase: ( str ) => str.replace( /(\w)(\w*)/g, ( g0, g1, g2 ) => g1.toUpperCase() + g2.toLowerCase() ),
+	setLowerCase: ( str ) => str.replace( /(\w)(\w*)/g, ( g0, g1, g2 ) => g1.toLowerCase() + g2.toLowerCase() ),
 
 	init() {
 		this.maybeDisable( this.href );
