@@ -1,12 +1,12 @@
-import Alpine from 'alpinejs';
-// Light version of the breadcrumbs js component
+// Light version of the breadcrumbs js component with essentials only
+// No back, no blacklist, whitelist, etc.
 export default (
 	{
 		disabled = false,
 		href = '',
 		home = true,
 		last = false,
-		lettercase = 'capitalize',
+		lettercase = 'uppercase',
 		title = false,
 		stripDashes = true,
 		stripUnderscores = true,
@@ -34,8 +34,8 @@ export default (
 
 	// GETTERS
 	get url() {
-		const href = this.href ? this.href : window.location.href;
-		return href;
+		const h = this.href ? this.href : window.location.href;
+		return h;
 	},
 
 	get urlObj() {
@@ -115,7 +115,7 @@ export default (
 		// Attach Svgs
 		this.handleSvg( crumbs );
 		// Maybe disable the crumbs
-		if ( this.disabled ) {
+		if ( this.disabled === true ) {
 			return crumbs = [];
 		}
 
