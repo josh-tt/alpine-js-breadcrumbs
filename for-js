@@ -1,4 +1,3 @@
-import Alpine from 'alpinejs';
 // TODO:
 // Window history for back button option
 // Build href array history and use that for back button so that dynamic url inputs can be traced back
@@ -79,12 +78,13 @@ export default (
 	backSvg, // Svg markup for back
 	altSvg, // Svg markup for alt
 
+	// GETTERS
 	get url() {
-		const href = this.href ? this.href : window.location.href;
-		this.maybeDisable( href );
-		console.log( href );
+		const h = this.href ? this.href : window.location.href;
+		this.maybeDisable( h );
+		console.log( h );
 
-		return href;
+		return h;
 	},
 
 	get urlObj() {
@@ -135,6 +135,7 @@ export default (
 		return [];
 	},
 
+	// Functions
 	maybeDisable( url ) {
 		if ( this.whitelistUrls.length > 0 ) {
 			// Use match to check if the url is in the whitelist
