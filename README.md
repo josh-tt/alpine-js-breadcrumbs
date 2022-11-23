@@ -13,88 +13,71 @@ For example, if ajax-ing in content and not updating the url, but you want to ex
 You can also turn query strings into breadcrumb like object with name/url. Why? Not sure, but I added it in case. 
 
 #Usage 
-Add the file to your js following the standard procedures for Alpine data or use the inline script in this repo
+Add the file to your js following the standard procedures for Alpine data 
+import breadcrumbs from './yourpath/breadcrumbs';
+Alpine.data( 'breadcrumbs', breadcrumbs );
+window.Alpine = Alpine;
+Alpine.start();
 
-In your html add <div x-data="breadcrub()"></div> and the rest is up to you configure the options. Something like
 #Example
 ```
-<div x-data="breadcrumbs(link = 'http://sometest/thing/thing2')">
-<template x-for="(crumb, index) in breadcrumbs" :key="index">
-<a :href="crumb.path" class="text-black">
-    <span x-text="crumb.name"></span>
-</a>
-</template>
+<div x-data="breadcrumbs({href:'http://something.com/foo/baz', back:true, bypassUrls:['http://test.com']})" class="relative">
+    <template x-for="breadcrumb in breadcrumbs">
+	<a :href="breadcrumb.path" class="text-sm font-medium text-gray-500 hover:text-gray-700">
+	    <span x-text="breadcrumb.name"></span>
+	</a>
+    </template>
 </div>
 ```
-# You can:
-- Get an array of breadcrumbs with name, url from either the current window location OR a custom href. Custom href means you give it a url like http://dogs.com/dogs/cats and you'll get something like:
-```
-[
-    {
-        "name": "Home",
-        "path": "/"
-    },
-    {
-        "name": "Dogs",
-        "path": "/dogs"
-    },
-    {
-        "name": "Cats",
-        "path": "/dogs/cats"
-    }
-]
-```
-- Blacklist certain urls or keywords (this is a bit rough, but works ok). You may wish to edit things like for exact match or includes etc.
-```
-customBlacklist: [
-		'http://cats.com',
-	], 
-  ```
-  Will do nothing but disable breadcrumbs and return an empty array of breadcrumbs if the url is http://cats.com
-  
-- String replacement - For example if your custom rules for string replacement are:
-- 
-```
-customReplacements: [
+# Options :
+        ```disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
+	href, // The current url or the user input url
+	home, // Show the home or first crumb (if back is on, back is home and home is first)
+	allowOneItem, // show the breadcrumb even if there is only one item
+	back, // Replace the first item with 'back' text
+	referrerUrl, // use the window referrer url as the back url
+	last, // Show last item
+	title, // use document title for the last item
+	lettercase, // uppercase, lowercase, capitalize
+	stripDashes, // Remove dashes from the crumb names
+	stripUnderscores, // Remove underscores from the crumb names
+	trailingSlash, // Add trailing slash to the generated hrefs
+	whitelistUrls: [
+		...whitelistUrls, // User defined urls to enable breadcrumbs on - setting disabled to false (opposite of blacklistUrls) - // Use a regex wildcard to match multiple urls
+		// 'http://something.com/foo/*',
+
+	],
+	blacklistUrls: [
+		...blacklistUrls, // User defined urls to bypass (others below are built-in - can't be changed) - // Use a regex wildcard to match multiple urls
+		// 'http://something.com/bar/*',
+	],
+	stringReplace, // Enable string replacement
+	stringReplacements: [
+		...stringReplacements, // User defined string replacements (others below are built-in - can't be changed)
 		{
-			find: 'Cats',
-			replace: 'I said dogs!',
-			path: '',
+			find: 'bird',
+			replace: 'birdie',
+			path: '/dogs/cats/some-bird',
+			pattern: '',
 		},
 		{
-			find: 'I said dogs!',
-			replace: 'No, I said cats',
-			path: '',
-			pattern: 'https://dogs.com/dogs/(.*)',
+			find: 'BAZ',
+			replace: 'replaced texts',
+			path: '/foo/baz',
+			pattern: '',
 		},
-]
-```
-You should get get:
-```
-[
-    {
-        "name": "Home",
-        "path": "/"
-    },
-    {
-        "name": "Dogs",
-        "path": "/dogs"
-    },
-    {
-        "name": "No, I said cats",
-        "path": "/dogs/cats"
-    }
-]
-```
-- Remove the home link 
-- Use a custom icon for the home link
-- Make the home (or the first breadcrumb) say 'back'
-- Make the back button use the referrer url (previous url) if it exists on same domain or fallback to the default. 
-- Option for back icon (alt icon)
-- Remove the first item or last item
-- Replace underscores and dashes
-- Use the doc title for the last item name
-- Remove (ignore) query strings. 
-- Title case or lower case
+		{
+			find: '',
+			replace: '',
+			path: '',
+			pattern: 'https://dogs.com/dogs/(.*)', // Todo: Reimplement pattern from previous version
+		},
+	],
+	showFirstOnly, // only show the first item
+	showPreviousOnly, // only show the previous item
+	svg, // 'home', 'back', 'alt'
+	homeSvg, // Svg markup for home
+	backSvg, // Svg markup for back
+	altSvg, // Svg markup for alt```
 etc...
 
