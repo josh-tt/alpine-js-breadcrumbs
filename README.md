@@ -10,7 +10,7 @@ If you want a quick and dirty way to get breadcrumbs as data in Alpine so you ca
 
 For example, if ajax-ing in content and not updating the url, but you want to extract some links and names (breadcrumbs) from the string, this does it. You then have to use that data in your template as you see fit.
 
-You can also turn query strings into breadcrumb like object with name/url. Why? Not sure, but I added it in case. 
+You can also turn query strings into breadcrumb like object with name/url. Why? Not sure, but I added it thinking of displaying 'tags' for search queries
 
 #Usage 
 Add the file to your js following the standard procedures for Alpine data 
@@ -21,7 +21,7 @@ Alpine.start();
 
 #Example
 ```
-<div x-data="breadcrumbs({href:'http://something.com/foo/baz', back:true, bypassUrls:['http://test.com']})" class="relative">
+<div x-data="breadcrumbs({href:'http://something.com/foo/baz', back:true, blacklistUrls:['http://test.com']})">
     <template x-for="breadcrumb in breadcrumbs">
 	<a :href="breadcrumb.path" class="text-sm font-medium text-gray-500 hover:text-gray-700">
 	    <span x-text="breadcrumb.name"></span>
@@ -30,7 +30,7 @@ Alpine.start();
 </div>
 ```
 # Options :
-        ```disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
+```disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
 	href, // The current url or the user input url
 	home, // Show the home or first crumb (if back is on, back is home and home is first)
 	allowOneItem, // show the breadcrumb even if there is only one item
