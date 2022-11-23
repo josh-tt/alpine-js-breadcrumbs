@@ -1,0 +1,213 @@
+import Alpine from 'alpinejs';
+// Light version of the breadcrumbs js component
+export default (
+	{
+		disabled = false,
+		href = '',
+		home = true,
+		last = false,
+		lettercase = 'capitalize',
+		title = false,
+		stripDashes = true,
+		stripUnderscores = true,
+		trailingSlash = true,
+		svg = 'home',
+		homeSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" /></svg>',
+		backSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" /></svg>',
+		altSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v2.5A2.25 2.25 0 004.25 9h2.5A2.25 2.25 0 009 6.75v-2.5A2.25 2.25 0 006.75 2h-2.5zm0 9A2.25 2.25 0 002 13.25v2.5A2.25 2.25 0 004.25 18h2.5A2.25 2.25 0 009 15.75v-2.5A2.25 2.25 0 006.75 11h-2.5zm9-9A2.25 2.25 0 0011 4.25v2.5A2.25 2.25 0 0013.25 9h2.5A2.25 2.25 0 0018 6.75v-2.5A2.25 2.25 0 0015.75 2h-2.5zm0 9A2.25 2.25 0 0011 13.25v2.5A2.25 2.25 0 0013.25 18h2.5A2.25 2.25 0 0018 15.75v-2.5A2.25 2.25 0 0015.75 11h-2.5z" clip-rule="evenodd" /></svg>',
+	} ) => ( {
+
+	// OPTIONS
+	disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
+	href, // The current url or the user input url
+	home, // Show the home or first crumb (if back is on, back is home and home is first)
+	last, // Show last item
+	title, // use document title for the last item
+	lettercase, // uppercase, lowercase, capitalize
+	stripDashes, // Remove dashes from the crumb names
+	stripUnderscores, // Remove underscores from the crumb names
+	trailingSlash, // Add trailing slash to the generated hrefs
+	svg, // 'home', 'back', 'alt'
+	homeSvg, // Svg markup for home
+	backSvg, // Svg markup for back
+	altSvg, // Svg markup for alt
+
+	// GETTERS
+	get url() {
+		const href = this.href ? this.href : window.location.href;
+		return href;
+	},
+
+	get urlObj() {
+		const obj = new URL( this.url );
+		const pathname = obj.pathname;
+		const domain = obj.hostname;
+		const search = obj.search;
+		const searchParms = obj.searchParams;
+		const hash = obj.hash;
+
+		return {
+			pathname,
+			domain,
+			search,
+			searchParms,
+			hash,
+		};
+	},
+
+	get breadcrumbs() {
+		if ( ! this.disabled ) {
+			const pathname = this.urlObj.pathname;
+			const crumbs = this.createBreadcrumbs( pathname ).filter( ( item ) => item.name !== '' );
+			return crumbs;
+		}
+
+		return [];
+	},
+
+	get isDisabled() {
+		return this.disabled;
+	},
+
+	// Functions
+	toggle() {
+		this.disabled = ! this.disabled;
+	},
+
+	createBreadcrumbs( path ) {
+		// Return home if path === '/'
+		if ( path === '/' ) {
+			return [ {
+				name: 'Home',
+				path: '/',
+			} ];
+		}
+
+		let crumbs = [];
+
+		// Split the path into an array of strings
+		crumbs = path.split( '/' );
+		crumbs = crumbs.map( ( breadcrumb, index ) => {
+			// Replace the first item in the array with Home and the path with /
+			if ( index === 0 ) {
+				breadcrumb = 'Home';
+				return {
+					name: breadcrumb,
+					path: '/',
+				};
+			}
+
+			// If count is greater than 1, add the previous breadcrumb to the path
+			return {
+				name: breadcrumb,
+				path: crumbs.slice( 0, index + 1 ).join( '/' ),
+			};
+		} );
+
+		// Handle home, back and last options
+		this.handleHome( crumbs );
+		this.handleLast( crumbs );
+		// Handle symbols and casings
+		this.handleDashes( crumbs );
+		this.handleUnderscores( crumbs );
+		this.handleTrailingSlash( crumbs );
+		this.handleLetterCase( crumbs );
+		// Attach Svgs
+		this.handleSvg( crumbs );
+		// Maybe disable the crumbs
+		if ( this.disabled ) {
+			return crumbs = [];
+		}
+
+		return crumbs;
+	},
+
+	handleSvg( crumbs ) {
+		if ( this.svg === 'home' ) {
+			crumbs[ 0 ].svg = this.homeSvg;
+		} else if ( this.svg === 'back' ) {
+			crumbs[ 1 ].svg = this.backSvg;
+		} else if ( this.svg === 'alt' ) {
+			crumbs[ crumbs.length - 1 ].svg = this.altSvg;
+		} else if ( this.svg === '' ) {
+			crumbs[ 0 ].svg = '';
+		}
+	},
+
+	handleHome( crumbs ) {
+		if ( ! this.home ) {
+			if ( crumbs[ 0 ].path === '/' ) {
+				// Remove it from array
+				crumbs.shift();
+			}
+		}
+	},
+
+	handleLast( crumbs ) {
+		// If last is false, remove last item
+		if ( ! this.last ) {
+			crumbs.pop();
+		}
+		if ( this.last ) {
+			// Use the document title
+			if ( this.useTitle ) {
+				crumbs[ crumbs.length - 1 ].name = document.title;
+			}
+		}
+	},
+
+	handleTrailingSlash( crumbs ) {
+		if ( this.trailingSlash ) {
+			// Add trailing slash to each crumb
+			crumbs.map( ( crumb ) => {
+				if ( ! crumb.path.endsWith( '/' ) ) {
+					crumb.path = `${ crumb.path }/`;
+				}
+			} );
+			return;
+		}
+		// If path is not equal to '/', remove trailing slash
+		crumbs.map( ( crumb ) => {
+			if ( crumb.path !== '/' && crumb.path.endsWith( '/' ) ) {
+				crumb.path = crumb.path.slice( 0, -1 );
+			}
+		} );
+	},
+
+	handleLetterCase( crumbs ) {
+		if ( this.lettercase === 'lowercase' ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.toLowerCase();
+			} );
+			return;
+		}
+		if ( this.lettercase === 'uppercase' ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.toUpperCase();
+			} );
+			return;
+		}
+		if ( this.lettercase === 'capitalize' ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.charAt( 0 ).toUpperCase() + crumb.name.slice( 1 );
+			} );
+		}
+	},
+
+	handleDashes( crumbs ) {
+		if ( this.stripDashes ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.replace( /-/g, ' ' );
+			} );
+		}
+	},
+
+	handleUnderscores( crumbs ) {
+		if ( this.stripUnderscores ) {
+			crumbs.map( ( crumb ) => {
+				crumb.name = crumb.name.replace( /_/g, ' ' );
+			} );
+		}
+	},
+
+} );
