@@ -1,67 +1,34 @@
-// TODO:
-// Window history for back button option
-// Build href array history and use that for back button so that dynamic url inputs can be traced back
-export default (
-	{
-		disabled = false,
-		href = '',
-		home = true,
-		allowOneItem = true,
-		back = false,
-		referrerUrl = true,
-		last = false,
-		lettercase = 'uppercase',
-		title = false,
-		stripDashes = true,
-		stripUnderscores = true,
-		trailingSlash = true,
-		blacklistUrls = [],
-		whitelistUrls = [],
-		stringReplace = true,
-		stringReplacements = [],
-		showFirstOnly = false,
-		showPreviousOnly = false,
-		svg = 'home',
-		homeSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" /></svg>',
-		backSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" /></svg>',
-		altSvg = '<svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">  <path fill-rule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v2.5A2.25 2.25 0 004.25 9h2.5A2.25 2.25 0 009 6.75v-2.5A2.25 2.25 0 006.75 2h-2.5zm0 9A2.25 2.25 0 002 13.25v2.5A2.25 2.25 0 004.25 18h2.5A2.25 2.25 0 009 15.75v-2.5A2.25 2.25 0 006.75 11h-2.5zm9-9A2.25 2.25 0 0011 4.25v2.5A2.25 2.25 0 0013.25 9h2.5A2.25 2.25 0 0018 6.75v-2.5A2.25 2.25 0 0015.75 2h-2.5zm0 9A2.25 2.25 0 0011 13.25v2.5A2.25 2.25 0 0013.25 18h2.5A2.25 2.25 0 0018 15.75v-2.5A2.25 2.25 0 0015.75 11h-2.5z" clip-rule="evenodd" /></svg>',
-	} ) => ( {
+import Alpine from 'alpinejs';
+// Refactored and more flexibility.
+// Note: uses alpine.store to set the loading state which should then be used on the 'template' tags hwich have trouble resetting when using live urls. If removed, then this should work with js along without alpine.
 
-	// OPTIONS
-	disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
-	href, // The current url or the user input url
-	home, // Show the home or first crumb (if back is on, back is home and home is first)
-	allowOneItem, // show the breadcrumb even if there is only one item
-	back, // Replace the first item with 'back' text
-	referrerUrl, // use the window referrer url as the back url
-	last, // Show last item
-	title, // use document title for the last item
-	lettercase, // uppercase, lowercase, capitalize
-	stripDashes, // Remove dashes from the crumb names
-	stripUnderscores, // Remove underscores from the crumb names
-	trailingSlash, // Add trailing slash to the generated hrefs
-	whitelistUrls: [
-		...whitelistUrls, // User defined urls to enable breadcrumbs on - setting disabled to false (opposite of blacklistUrls) - // Use a regex wildcard to match multiple urls
-		// 'http://something.com/foo/*',
-
-	],
-	blacklistUrls: [
-		...blacklistUrls, // User defined urls to bypass (others below are built-in - can't be changed) - // Use a regex wildcard to match multiple urls
-		// 'http://something.com/bar/*',
-	],
-	stringReplace, // Enable string replacement
+export default ( { href, disabled, back, referrerUrl, title, truncate, stripDashes, stripUnderscores, trailingSlash, lettercase, firstCrumbSvg, secondCrumbSvg, truncateCrumbSvg, stringReplace, stringReplacements = [], whitelistUrls = [], blacklistUrls = [] } ) => ( {
+	url: href || window.location.href,
+	disabled: disabled || false,
+	truncate: truncate || false,
+	stripDashes: stripDashes || true,
+	stripUnderscores: stripUnderscores || true,
+	trailingSlash: trailingSlash || true,
+	back: back || false,
+	referrerUrl: referrerUrl || false,
+	useTitle: title || false,
+	lettercase: lettercase || 'capitalize',
+	firstCrumbSvg: firstCrumbSvg || false,
+	secondCrumbSvg: secondCrumbSvg || false,
+	truncateCrumbSvg: truncateCrumbSvg || false,
+	stringReplace: stringReplace || true,
 	stringReplacements: [
 		...stringReplacements, // User defined string replacements (others below are built-in - can't be changed)
 		{
-			find: 'bird',
-			replace: 'birdie',
-			path: '/dogs/cats/some-bird',
+			find: '-expansions',
+			replace: 'expansions',
+			path: '/some/path/to/check/specifically',
 			pattern: '',
 		},
 		{
-			find: 'BAZ',
-			replace: 'replaced texts',
-			path: '/foo/baz',
+			find: 'expansions', // Global find / replace
+			replace: 'exp',
+			path: '',
 			pattern: '',
 		},
 		{
@@ -71,21 +38,17 @@ export default (
 			pattern: 'https://dogs.com/dogs/(.*)', // Todo: Reimplement pattern from previous version
 		},
 	],
-	showFirstOnly, // only show the first item
-	showPreviousOnly, // only show the previous item
-	svg, // 'home', 'back', 'alt'
-	homeSvg, // Svg markup for home
-	backSvg, // Svg markup for back
-	altSvg, // Svg markup for alt
+	whitelistUrls: [
+		...whitelistUrls, // User defined urls to enable breadcrumbs on - setting disabled to false (opposite of blacklistUrls) - // Use a regex wildcard to match multiple urls
+		// 'http://something.com/foo/*',
+		// 'http://cats.com/plugins/expansions/templates/sound-packs',
 
-	// GETTERS
-	get url() {
-		const h = this.href ? this.href : window.location.href;
-		this.maybeDisable( h );
-		console.log( h );
-
-		return h;
-	},
+	],
+	blacklistUrls: [
+		...blacklistUrls, // User defined urls to bypass (others below are built-in - can't be changed) - // Use a regex wildcard to match multiple urls
+		// 'http://something.com/bar/*',
+		// 'http://cats.com/plugins/expansions/templates/sound-packs',
+	],
 
 	get urlObj() {
 		const obj = new URL( this.url );
@@ -94,6 +57,9 @@ export default (
 		const search = obj.search;
 		const searchParms = obj.searchParams;
 		const hash = obj.hash;
+
+		// Set disabled state based on blacklist and whitelist
+		this.maybeDisable( this.url );
 
 		return {
 			pathname,
@@ -107,35 +73,203 @@ export default (
 	get breadcrumbs() {
 		if ( ! this.disabled ) {
 			const pathname = this.urlObj.pathname;
+
+			// Create the crumbs from the string
 			const crumbs = this.createBreadcrumbs( pathname ).filter( ( item ) => item.name !== '' );
+
+			// Add Trailing slashes on the last crumb
+			this.handleTrailingSlash( crumbs );
+
+			// First and Last text content
+			this.handleBack( crumbs );
+			this.handleTitle( crumbs );
+
+			// String replace (pre-formatting - so based on url)
+			this.handleStringReplace( crumbs );
+
+			// Text Formatting
+			this.handleLetterCase( crumbs );
+			this.handleDashes( crumbs );
+			this.handleUnderscores( crumbs );
+
+			// Svgs
+			this.setSvgStates( crumbs );
+
 			return crumbs;
 		}
 
 		return [];
 	},
 
-	get queryCrumbs() {
-		if ( ! this.disabled ) {
-			const search = this.urlObj.search;
-			const searchParms = this.urlObj.searchParms;
-			const queryCrumbs = this.createQueryCrumbs( search, searchParms );
-			return queryCrumbs;
-		}
+	get allCrumbs() {
+		// New map from the crumbs
+		const all = this.breadcrumbs.map( ( crumb ) => {
+			return {
+				name: crumb.name,
+				path: crumb.path,
+				show: crumb.show,
+				truncate: crumb.truncate,
+				svg: crumb.svg,
+				type: crumb.type,
+			};
+		} );
 
+		Alpine.store( 'isLoading', {
+			breadcrumbs: true,
+		} );
+
+		this.truncateCrumbs( all );
+
+		Alpine.store( 'isLoading', {
+			breadcrumbs: false,
+		} );
+
+		return all;
+	},
+
+	get allMinusFirst() {
+		const all = this.allCrumbs;
+		all.shift();
+		return all;
+	},
+
+	get allMinusLast() {
+		const all = this.allCrumbs;
+		all.pop();
+		return all;
+	},
+
+	get allMinusFirstAndLast() {
+		const all = this.allCrumbs;
+		all.shift();
+		all.pop();
+		return all;
+	},
+
+	get firstCrumb() {
+		// New map from the crumbs
+		const all = this.breadcrumbs.map( ( crumb ) => {
+			return {
+				name: crumb.name,
+				path: crumb.path,
+				show: crumb.show,
+				svg: crumb.svg,
+				truncate: crumb.truncate,
+			};
+		} );
+		// Remove the first crumb in an array
+		const fC = all.shift();
+		return [ fC ];
+	},
+
+	get secondCrumb() {
+		// New map from the crumbs
+		const all = this.breadcrumbs.map( ( crumb ) => {
+			return {
+				name: crumb.name,
+				path: crumb.path,
+				show: crumb.show,
+				svg: crumb.svg,
+				truncate: crumb.truncate,
+			};
+		} );
+		// Remove the first crumb in an array
+		all.shift();
+		if ( all.length > 0 ) {
+			// Get the second crumb
+			const sC = all.shift();
+			return [ sC ];
+		}
 		return [];
 	},
 
-	get hashCrumb() {
-		if ( ! this.disabled ) {
-			const hash = this.urlObj.hash;
-			const hashCrumb = this.createHashCrumb( hash );
-			return hashCrumb;
-		}
+	get lastCrumb() {
+		// New map from the crumbs
+		const all = this.breadcrumbs.map( ( crumb ) => {
+			return {
+				name: crumb.name,
+				path: crumb.path,
+				show: crumb.show,
+				svg: crumb.svg,
+				truncate: crumb.truncate,
+			};
+		} );
+		// Remove the last crumb
+		const lC = all.pop();
+		return [ lC ];
+	},
 
+	get lastTwoCrumbs() {
+		// New map from the crumbs
+		const all = this.breadcrumbs.map( ( crumb ) => {
+			return {
+				name: crumb.name,
+				path: crumb.path,
+				show: crumb.show,
+				svg: crumb.svg,
+				truncate: crumb.truncate,
+			};
+		} );
+		return all.slice( -2 );
+	},
+
+	get previousCrumb() {
+		if ( this.breadcrumbs.length > 1 ) {
+			// New map from the crumbs
+			const all = this.breadcrumbs.map( ( crumb ) => {
+				return {
+					name: crumb.name,
+					path: crumb.path,
+					show: crumb.show,
+					svg: crumb.svg,
+					truncate: crumb.truncate,
+				};
+			} );
+			// Remove the last crumb and return in an array
+			const crumb = all[ all.length - 2 ];
+			return [ crumb ];
+		}
 		return [];
 	},
 
-	// Functions
+	get previousTwoCrumbs() {
+		// New map from the crumbs
+		const all = this.breadcrumbs.map( ( crumb ) => {
+			return {
+				name: crumb.name,
+				path: crumb.path,
+				show: crumb.show,
+				svg: crumb.svg,
+				truncate: crumb.truncate,
+			};
+		} );
+		// Remove the last crumb
+		return all.slice( all.length - 3, all.length - 1 );
+	},
+
+	get truncatedCrumbs() {
+		const crumbs = this.breadcrumbs.filter( ( crumb ) => crumb.truncate === true );
+		return crumbs;
+	},
+
+	get shownCrumbs( ) {
+		const shown = this.breadcrumbs.filter( ( crumb ) => crumb.show !== false );
+		return shown;
+	},
+
+	get hiddenCrumbs( ) {
+		const notShown = this.breadcrumbs.filter( ( crumb ) => crumb.show === false );
+		return notShown;
+	},
+
+	get isDisabled() {
+		return this.disabled;
+	},
+
+	get isTruncated() {
+		return this.truncate;
+	},
+
 	maybeDisable( url ) {
 		if ( this.whitelistUrls.length > 0 ) {
 			// Use match to check if the url is in the whitelist
@@ -158,6 +292,7 @@ export default (
 		}
 	},
 
+	// Crumbs
 	createBreadcrumbs( path ) {
 		// Return home if path === '/'
 		if ( path === '/' ) {
@@ -172,12 +307,17 @@ export default (
 		// Split the path into an array of strings
 		crumbs = path.split( '/' );
 		crumbs = crumbs.map( ( breadcrumb, index ) => {
-			// Replace the first item in the array with Home and the path with /
+			//  // And path is equal to '/' or ''
 			if ( index === 0 ) {
 				breadcrumb = 'Home';
 				return {
 					name: breadcrumb,
 					path: '/',
+					show: true,
+					truncate: false,
+					svg: false,
+					type: 'crumb',
+
 				};
 			}
 
@@ -185,94 +325,92 @@ export default (
 			return {
 				name: breadcrumb,
 				path: crumbs.slice( 0, index + 1 ).join( '/' ),
+				show: true,
+				truncate: false,
+				svg: false,
+				type: 'crumb',
 			};
 		} );
 
-		// Handle home, back and last options
-		this.handleHome( crumbs );
-		this.handleBack( crumbs );
-		this.handleLast( crumbs );
-		// Handle symbols and casings
-		this.handleDashes( crumbs );
-		this.handleUnderscores( crumbs );
-		this.handleTrailingSlash( crumbs );
-		this.handleLetterCase( crumbs );
-		this.handleStringReplace( crumbs );
-		// Remove items
-		this.handleFirstOnly( crumbs );
-		this.handlePreviousOnly( crumbs );
-		// Attach Svgs
-		this.handleSvg( crumbs );
-		// Finalize
-		this.handleAllowOneItem( crumbs );
+		// Maybe disable the crumbs
+		if ( this.disabled === true ) {
+			return crumbs = [];
+		}
+
+		this.setTruncateState( crumbs );
 
 		return crumbs;
 	},
 
-	createQueryCrumbs( search, searchParms ) {
-		if ( search === '' ) {
-			return [];
-		}
-		const queryCrumbs = [];
-		searchParms.forEach( ( value, key ) => {
-			queryCrumbs.push( {
-				name: key,
-				value,
-			} );
-		} );
+	truncateCrumbs( crumbs ) {
+		if ( this.truncate ) {
+			// Replace all the truncate true crumbs with a single crumb containing an array of the truncated crumbs
+			const truncated = crumbs.filter( ( crumb ) => crumb.truncate === true );
+			if ( truncated.length > 0 && truncated.length < crumbs.length ) {
+				const truncatedCrumbs = truncated.map( ( crumb ) => {
+					return {
+						name: crumb.name,
+						path: crumb.path,
+						show: crumb.show,
+						truncate: crumb.truncate,
+						svg: crumb.svg,
+						type: 'crumb',
+					};
+				} );
 
-		// Handle symbols and casings
-		this.handleDashes( queryCrumbs );
-		this.handleUnderscores( queryCrumbs );
-		this.handleLetterCase( queryCrumbs );
-		// Todo: handle string replace
+				const truncatedCrumb = {
+					name: '...',
+					path: 'javascript:void(0)',
+					show: true,
+					truncate: true,
+					svg: false,
+					type: 'list',
+					truncatedCrumbs,
+				};
 
-		return queryCrumbs;
-	},
-
-	createHashCrumb( hash ) {
-		if ( hash === '' ) {
-			return [];
-		}
-		const hashCrumb = [ {
-			name: hash.replace( '#', '' ),
-			path: hash,
-		} ];
-
-		// Handle symbols and casings
-		this.handleDashes( hashCrumb );
-		this.handleUnderscores( hashCrumb );
-		this.handleLetterCase( hashCrumb );
-		// Todo: handle string replace
-
-		return hashCrumb;
-	},
-
-	handleSvg( crumbs ) {
-		if ( this.svg === 'home' ) {
-			crumbs[ 0 ].svg = this.homeSvg;
-		} else if ( this.svg === 'back' ) {
-			crumbs[ 1 ].svg = this.backSvg;
-		} else if ( this.svg === 'alt' ) {
-			crumbs[ crumbs.length - 1 ].svg = this.altSvg;
-		} else if ( this.svg === '' ) {
-			crumbs[ 0 ].svg = '';
-		}
-	},
-
-	handleAllowOneItem( crumbs ) {
-		if ( ! this.allowOneItem && crumbs.length === 1 ) {
-			crumbs.length = 0;
-		}
-	},
-
-	handleHome( crumbs ) {
-		if ( ! this.home ) {
-			if ( crumbs[ 0 ].path === '/' ) {
-				// Remove it from array
-				crumbs.shift();
+				crumbs.splice( crumbs.indexOf( truncated[ 0 ] ), truncated.length, truncatedCrumb );
 			}
 		}
+
+		return crumbs;
+	},
+
+	setTruncateState( crumbs ) {
+		crumbs = crumbs.map( ( crumb, index ) => {
+			if ( this.truncate === false ) {
+				crumb.show = true;
+			}
+
+			if ( this.truncate === true ) {
+				// If there are more than 4 crumbs, replace the middle ones with a '...'
+				if ( crumbs.length > 2 ) {
+					if ( index > 1 && index < crumbs.length - 2 ) {
+						// Set all the middle ones to shown is false, add 'truncated = true' to them all and put them in an truncated array
+						crumb.show = false;
+						crumb.truncate = true;
+					}
+				}
+			}
+		} );
+
+		return crumbs;
+	},
+
+	setSvgStates( crumbs ) {
+		// If index is 0 , set the crumb svg to 'true
+		crumbs = crumbs.map( ( crumb, index ) => {
+			if ( index === 0 ) {
+				crumb.svg = this.firstCrumbSvg;
+			}
+			if ( index === 1 ) {
+				crumb.svg = this.secondCrumbSvg;
+			}
+			if ( crumb.type === 'list' ) {
+				crumb.svg = this.truncateCrumbSvg;
+			}
+		} );
+
+		return crumbs;
 	},
 
 	handleBack( crumbs ) {
@@ -288,36 +426,7 @@ export default (
 		}
 	},
 
-	handleFirstOnly( crumbs ) {
-		if ( this.showFirstOnly ) {
-			crumbs.length = 1;
-		}
-	},
-
-	handlePreviousOnly( crumbs ) {
-		if ( this.showPreviousOnly ) {
-			// Get the second to last item in array and remove everything else
-			const lastItem = crumbs[ crumbs.length - 2 ];
-			if ( lastItem ) {
-				crumbs.length = 0;
-				crumbs.push( lastItem );
-			}
-		}
-	},
-
-	handleLast( crumbs ) {
-		// If last is false, remove last item
-		if ( ! this.last ) {
-			crumbs.pop();
-		}
-		if ( this.last ) {
-			// Use the document title
-			if ( this.useTitle ) {
-				crumbs[ crumbs.length - 1 ].name = document.title;
-			}
-		}
-	},
-
+	// Formatting
 	handleTrailingSlash( crumbs ) {
 		if ( this.trailingSlash ) {
 			// Add trailing slash to each crumb
@@ -372,6 +481,7 @@ export default (
 		}
 	},
 
+	// Text Content
 	handleStringReplace( crumbs ) {
 		if ( this.stringReplace ) {
 			crumbs.map( ( crumb ) => {
@@ -403,14 +513,31 @@ export default (
 		}
 	},
 
-	// Helpers
+	handleTitle( crumbs ) {
+		// If this is the last crumb, set the title to the crumb name
+		if ( crumbs.length > 0 ) {
+			// Use the document title
+			if ( this.useTitle ) {
+				crumbs[ crumbs.length - 1 ].name = document.title;
+			}
+		}
+	},
+
+	// Toggle events
+	toggleTruncate() {
+		this.truncate = ! this.truncate;
+	},
+
+	toggleDisabled() {
+		this.disabled = ! this.disabled;
+	},
+
+	// Utilities
 	addTrailingSlash: ( path ) => ( path.endsWith( '/' ) ? path : `${ path }/` ),
 	removeTrailingSlash: ( path ) => ( path.endsWith( '/' ) ? path.slice( 0, -1 ) : path ),
-	setTitleCase: ( str ) => str.replace( /(\w)(\w*)/g, ( g0, g1, g2 ) => g1.toUpperCase() + g2.toLowerCase() ),
-	setLowerCase: ( str ) => str.replace( /(\w)(\w*)/g, ( g0, g1, g2 ) => g1.toLowerCase() + g2.toLowerCase() ),
 
 	init() {
-		this.maybeDisable( this.href );
+
 	},
 
 } );
