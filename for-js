@@ -270,6 +270,27 @@ export default ( { href, disabled, back, referrerUrl, title, truncate, stripDash
 		return this.truncate;
 	},
 
+	get queryCrumbs() {
+		if ( ! this.disabled ) {
+			const search = this.urlObj.search;
+			const searchParms = this.urlObj.searchParms;
+			const queryCrumbs = this.createQueryCrumbs( search, searchParms );
+			return queryCrumbs;
+		}
+
+		return [];
+	},
+
+	get hashCrumb() {
+		if ( ! this.disabled ) {
+			const hash = this.urlObj.hash;
+			const hashCrumb = this.createHashCrumb( hash );
+			return hashCrumb;
+		}
+
+		return [];
+	},
+
 	maybeDisable( url ) {
 		if ( this.whitelistUrls.length > 0 ) {
 			// Use match to check if the url is in the whitelist
@@ -394,6 +415,46 @@ export default ( { href, disabled, back, referrerUrl, title, truncate, stripDash
 		} );
 
 		return crumbs;
+	},
+
+	// Query and hash crumbs
+	createQueryCrumbs( search, searchParms ) {
+		if ( search === '' ) {
+			return [];
+		}
+		const queryCrumbs = [];
+		searchParms.forEach( ( value, key ) => {
+			queryCrumbs.push( {
+				name: key,
+				value,
+			} );
+		} );
+
+		// Handle symbols and casings
+		this.handleDashes( queryCrumbs );
+		this.handleUnderscores( queryCrumbs );
+		this.handleLetterCase( queryCrumbs );
+		// Todo: handle string replace
+
+		return queryCrumbs;
+	},
+
+	createHashCrumb( hash ) {
+		if ( hash === '' ) {
+			return [];
+		}
+		const hashCrumb = [ {
+			name: hash.replace( '#', '' ),
+			path: hash,
+		} ];
+
+		// Handle symbols and casings
+		this.handleDashes( hashCrumb );
+		this.handleUnderscores( hashCrumb );
+		this.handleLetterCase( hashCrumb );
+		// Todo: handle string replace
+
+		return hashCrumb;
 	},
 
 	setSvgStates( crumbs ) {
