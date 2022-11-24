@@ -21,13 +21,16 @@ Alpine.start();
 
 #Example
 ```
-<div x-data="breadcrumbs({href:'http://something.com/foo/baz', back:true, blacklistUrls:['http://test.com']})">
-    <template x-for="breadcrumb in breadcrumbs">
-	<a :href="breadcrumb.path" class="text-sm font-medium text-gray-500 hover:text-gray-700">
-	    <span x-text="breadcrumb.name"></span>
-	</a>
+ <template x-if="!Alpine.store( 'isLoading').breadcrumbs">
+    <template x-for="(crumb, index) in allCrumbs" :key="index">
+	<div>
+	    <li class="flex">
+		    <a :href="crumb.path" x-text="crumb.name" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"></a>
+		</div>
+	    </li>
+	</div>
     </template>
-</div>
+</template>
 ```
 # Options :
 ```disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
