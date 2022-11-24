@@ -291,6 +291,7 @@ export default ( { href, disabled, back, referrerUrl, title, truncate, stripDash
 		return [];
 	},
 
+	// Disable from black/white list (double check this)
 	maybeDisable( url ) {
 		if ( this.whitelistUrls.length > 0 ) {
 			// Use match to check if the url is in the whitelist
@@ -313,7 +314,7 @@ export default ( { href, disabled, back, referrerUrl, title, truncate, stripDash
 		}
 	},
 
-	// Crumbs
+	// Make the crumbs
 	createBreadcrumbs( path ) {
 		// Return home if path === '/'
 		if ( path === '/' ) {
@@ -521,7 +522,8 @@ export default ( { href, disabled, back, referrerUrl, title, truncate, stripDash
 		}
 		if ( this.lettercase === 'capitalize' ) {
 			crumbs.map( ( crumb ) => {
-				crumb.name = crumb.name.charAt( 0 ).toUpperCase() + crumb.name.slice( 1 );
+				// Capitalize by using spaces or dashes or underscores
+				crumb.name = crumb.name.replace( /(?:^|\s|-|_)\S/g, ( a ) => a.toUpperCase() );
 			} );
 		}
 	},
