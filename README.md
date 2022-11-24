@@ -32,8 +32,9 @@ Alpine.start();
     </template>
 </template>
 ```
-# Options :
-```disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
+# Options (some names have changed in code that are listed below - no time to update) :
+```
+disabled, // Disables the crumbs by emptying the array which allows automatic hide/show. Bypassed urls will set disable to be true.
 	href, // The current url or the user input url
 	home, // Show the home or first crumb (if back is on, back is home and home is first)
 	allowOneItem, // show the breadcrumb even if there is only one item
