@@ -8,8 +8,6 @@ This is an experiment and by no means finished/production ready and has not been
 # Why?
 If you want a quick and dirty way to get breadcrumbs as data in Alpine so you can do stuff/display them perhaps this is interesting for you.  I needed a way to get breadcrumbs from a url so started writing it and just kept adding to it.
 
-For example, if ajax-ing in content and not updating the url, but you want to extract some links and names (breadcrumbs) from the string, this does it. You then have to use that data in your template as you see fit.
-
 You can also turn query strings into breadcrumb like object with name/url. Why? Not sure, but I added it thinking of displaying 'tags' for search queries
 
 #Usage 
@@ -20,17 +18,20 @@ window.Alpine = Alpine;
 Alpine.start();
 
 #Example
+
 ```
- <template x-if="!Alpine.store( 'isLoading').breadcrumbs">
-    <template x-for="(crumb, index) in allCrumbs" :key="index">
-	<div>
-	    <li class="flex">
-		    <a :href="crumb.path" x-text="crumb.name" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"></a>
-		</div>
-	    </li>
-	</div>
-    </template>
+<div x-data="breadcrumbs({href:'http://test.com/cats/dogs/birds'})">
+<template x-for="(crumb, index) in allCrumbs" :key="index">
+	<li class="flex">
+	    <div class="flex items-center">
+		<svg class="h-full w-6 flex-shrink-0 text-gray-200" viewBox="0 0 24 44" preserveAspectRatio="none" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+		    <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
+		</svg>
+		<a :href="crumb.path" x-text="crumb.name" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"></a>
+	    </div>
+	</li>
 </template>
+</div>
 ```
 # Options (some names have changed in code that are listed below - no time to update) :
 ```
