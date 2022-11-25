@@ -114,15 +114,7 @@ export default ( { href, disabled, back, referrerUrl, title, truncate, stripDash
 			};
 		} );
 
-		Alpine.store( 'isLoading', {
-			breadcrumbs: true,
-		} );
-
 		this.truncateCrumbs( all );
-
-		Alpine.store( 'isLoading', {
-			breadcrumbs: false,
-		} );
 
 		return all;
 	},
